@@ -1,0 +1,190 @@
+model<-glm(dependent_variable ~ independent_variable + other_independent_variable, data=x, family=name_of_family(link=link_name))
+summary(model)
+# To use the model to predict the outcome given new data... 
+# Put the new data in a dataframe, note - it is the independent variable):
+
+newdata = data.frame(wt = 2.1, disp = 180)
+
+x<- predict(model, newdata, type="response")
+# 0.2361081
+# The predicted probability of a v type engine is 0.24.
+
+# OR, if just one independent variable could do:
+
+range(mtcars$wt)
+ [1] 1.513 5.424
+#A range of wt values between 0 and 6 would be ideal. So we create a sequence of values between 0 and 6 in increments of 0.01. Joining such a large number of closely spaced points will give a smooth appearance to our model.
+xweight <- seq(0, 6, 0.01)
+
+# Now we use the predict() function to create the model for all of the values of xweight.
+yweight <- predict(model_weight, list(wt = xweight),type="response")
+
+# Now we plot.
+plot(mtcars$wt, mtcars$vs, pch = 16, xlab = "WEIGHT (g)", ylab = "VS")
+lines(xweight, yweight)
+
+################################################################################################################################################################################################################################################################################
+########################################### In more detail #############################################################################
+########################################################################################################################################
+
+
+https://www.theanalysisfactor.com/r-tutorial-glm1/
+
+model <- glm(formula= vs ~ wt + disp, data=mtcars, family=binomial)
+summary(model)
+
+# Note, binary as the vs is either a V engine or an S engine. The model looks at how the data fits the type of engine the car is likely to have based on weight and engine displacement. 
+
+# You can use the outcome of the model to predict the probability of an engine type based on new data!
+
+Remember, our goal here is to calculate a predicted probability of a V engine, for specific values of the predictors: a weight of 2100 lbs and engine displacement of 180 cubic inches.
+
+To do that, we create a data frame called newdata, in which we include the desired values for our prediction.
+
+newdata = data.frame(wt = 2.1, disp = 180)
+Now we use the predict() function to calculate the predicted probability. We include the argument type=”response” in order to get our prediction.
+
+predict(model, newdata, type="response")
+0.2361081
+The predicted probability is 0.24.
+
+#https://www.theanalysisfactor.com/r-glm-model-fit/
+
+Call:
+glm(formula = vs ~ wt + disp, family = binomial, data = mtcars)
+Deviance Residuals:
+     Min        1Q    Median        3Q       Max
+-1.67506  -0.28444  -0.08401   0.57281   2.08234
+Coefficients:
+            Estimate  Std. Error z value  Pr(>|z|)
+(Intercept)  1.60859    2.43903   0.660    0.510
+wt           1.62635    1.49068   1.091    0.275
+disp        -0.03443    0.01536  -2.241    0.025 *
+---
+Signif. codes: 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+(Dispersion parameter for binomial family taken to be 1)
+Null deviance: 43.86 on 31 degrees of freedom
+Residual deviance: 21.40 on 29 degrees of freedom
+
+
+Number of Fisher Scoring iterations: 6
+We see that weight influences vs positively, while displacement has a slightly negative effect. We also see that the coefficient of weight is non-significant (p > 0.05), while the coefficient of displacement is significant. Later we will see how to investigate ways of improving our model.
+
+In fact, the estimates (coefficients of the predictors weight and displacement) are now in units called logits. We will define the logit in a later blog.
+
+Deviance
+We see the word Deviance twice over in the model output. Deviance is a measure of goodness of fit of a generalized linear model. Or rather, it’s a measure of badness of fit–higher numbers indicate worse fit.
+
+R reports two forms of deviance – the null deviance and the residual deviance. The null deviance shows how well the response variable is predicted by a model that includes only the intercept (grand mean).
+
+For our example, we have a value of 43.9 on 31 degrees of freedom. Including the independent variables (weight and displacement) decreased the deviance to 21.4 points on 29 degrees of freedom, a significant reduction in deviance.
+
+The Residual Deviance has reduced by 22.46 with a loss of two degrees of freedom.
+
+Fisher Scoring
+What about the Fisher scoring algorithm? Fisher’s scoring algorithm is a derivative of Newton’s method for solving maximum likelihood problems numerically.
+
+For model1 we see that Fisher’s Scoring Algorithm needed six iterations to perform the fit.
+
+This doesn’t really tell you a lot that you need to know, other than the fact that the model did indeed converge, and had no trouble doing it.
+
+Information Criteria
+The Akaike Information Criterion (AIC) provides a method for assessing the quality of your model through comparison of related models.  It’s based on the Deviance, but penalizes you for making the model more complicated.  Much like adjusted R-squared, it’s intent is to prevent you from including irrelevant predictors.
+
+However, unlike adjusted R-squared, the number itself is not meaningful. If you have more than one similar candidate models (where all of the variables of the simpler model occur in the more complex models), then you should select the model that has the smallest AIC.
+
+So it’s useful for comparing models, but isn’t interpretable on its own.
+
+Hosmer-Lemeshow Goodness of Fit
+How well our model fits depends on the difference between the model and the observed data.  One approach for binary data is to implement a Hosmer Lemeshow goodness of fit test.
+
+To implement this test, first install the ResourceSelection package, a follows.
+
+install.packages("ResourceSelection")
+Then load the package using the library() function. The test is available through the hoslem.test() function.
+
+library(ResourceSelection)
+hoslem.test(mtcars$vs, fitted(model))
+Hosmer and Lemeshow goodness of fit (GOF) test
+data: mtcars$vs, fitted(model)
+X-squared = 6.4717, df = 8, p-value = 0.5945
+Our model appears to fit well because we have no significant difference between the model and the observed data (i.e. the p-value is above 0.05).
+
+As with all measures of model fit, we’ll use this as just one piece of information in deciding how well this model fits.  It doesn’t work well in very large or very small data sets, but is often useful nonetheless.
+
+
+Now we want to plot our model, along with the observed data.
+
+Although we ran a model with multiple predictors, it can help interpretation to plot the predicted probability that vs=1 against each predictor separately.  So first we fit a glm for only one of our predictors, wt.
+
+model_weight
+summary(model_weight)
+Call:
+glm(formula = vs ~ wt, family = binomial, data = mtcars)
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.9003  -0.7641  -0.1559   0.7223   1.5736
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)   
+(Intercept)   5.7147     2.3014   2.483  0.01302 * 
+wt           -1.9105     0.7279  -2.625  0.00867 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+(Dispersion parameter for binomial family taken to be 1)
+Null deviance: 43.860  on 31  degrees of freedom
+Residual deviance: 31.367  on 30  degrees of freedom
+AIC: 35.367
+Number of Fisher Scoring iterations: 5
+To plot our model we need a range of values of weight for which to produce fitted values. This range of values we can establish from the actual range of values of wt.
+
+range(mtcars$wt)
+ [1] 1.513 5.424
+A range of wt values between 0 and 6 would be ideal. So we create a sequence of values between 0 and 6 in increments of 0.01. Joining such a large number of closely spaced points will give a smooth appearance to our model.
+
+xweight <- seq(0, 6, 0.01)
+Now we use the predict() function to create the model for all of the values of xweight.
+
+yweight <- predict(model_weight, list(wt = xweight),type="response")
+Now we plot.
+
+plot(mtcars$wt, mtcars$vs, pch = 16, xlab = "WEIGHT (g)", ylab = "VS")
+lines(xweight, yweight)
+image002
+We can do the same for displacement.
+
+model_disp
+summary(model_disp)
+Call:
+glm(formula = vs ~ disp, family = binomial, data = mtcars)
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.8621  -0.4143  -0.0872   0.5694   1.8157
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)   
+(Intercept)  4.137827   1.389354   2.978  0.00290 **
+disp        -0.021600   0.007131  -3.029  0.00245 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+(Dispersion parameter for binomial family taken to be 1)
+Null deviance: 43.860  on 31  degrees of freedom
+Residual deviance: 22.696  on 30  degrees of freedom
+AIC: 26.696
+Number of Fisher Scoring iterations: 6
+range(mtcars$disp)
+[1]  71.1 472.0
+xdisp
+ydisp
+plot(mtcars$disp, mtcars$vs, pch = 16, xlab = "DISPLACEMENT (cubic inches)", ylab = "VS")
+lines(xdisp, ydisp)
+image003
+We can see that for both predictors, there is a negative  relationship between the probability that vs=1 and the predictor variable.  As the predictor increases, the probability decreases.
+
+
+https://www.theanalysisfactor.com/generalized-linear-models-glm-r-part4/
+How to interpret the outcome for logits. Don't understand in the interaction term. Recheck your own notes re the probit outcome for Roz!
+
+
+###### Interaction vs Association * or + #######
+
+https://www.theanalysisfactor.com/interaction-association/
+
