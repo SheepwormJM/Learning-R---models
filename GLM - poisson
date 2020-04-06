@@ -1,0 +1,6 @@
+# Some poisson specific stuff.
+# For example, for FECs!
+
+# Can see more on poisson here (https://www.theanalysisfactor.com/poisson-regression-analysis-for-count-data/)
+
+# If doing a glm() then use a 'log' link function (https://www.theanalysisfactor.com/extensions-general-linear-model/)
