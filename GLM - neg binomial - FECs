@@ -1,0 +1,164 @@
+#Plot of Strongyle FEC:
+
+fe<-read.table("Fake_eggs.txt", header=T)
+summary(fe)
+
+
+#Plot of Strongyle FEC:
+x<-ggplot(data=fe, aes(x=Farm, y=FEC))+
+labs(y="FEC", x="Farm") +
+geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Season, colour=Region), width=5, outlier.shape=NA, size=1, alpha=0.8)+
+geom_dotplot(binaxis='y', stackdir='center', binwidth=20, dotsize=0.5)
+
+# OR
+x<-ggplot(data=fe, aes(x=Farm, y=FEC))+
+labs(y="FEC", x="Farm") +
+geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Season, colour=Region), width=5, outlier.shape=NA, size=1, alpha=0.8)+
+geom_jitter(mapping=aes(x=Farm, y=FEC), width=0.3)
+x
+
+# To get a continuous colour of my choice:
+library(viridis)
+#Note, the viridis colour library has good colour choices for colourblind people. 
+# You can use the functions: direction=1 (default) or -1, to get the DIRECTION of the colour gradient - for example, do you want it to go cold to hot, or hot to cold? 
+# You can ues the function option="A", or option="B", or option="C", or option = "D", or option="E", to get different colour palettes. If you remove option then you get the default viridis colour palette (option D). 
+# Have a play and see what you like.
+# Note that the scale_fill_viridis corresponds to the fill colour, while the scale_colour_viridis corresponds to the 'colour' colour. My fill is based on a continuous numerical variable (viridis' default option), while my colour (Region) is discrete, and so I have to use discrete=TRUE for the scale_colour_viridis. 
+# If you change alpha then you change the transparency. You can do this either in the geom_boxplot or in the scale_fill_viridis. Don't do it in both. If you do it in the viridis command then it will also be reflected in the legend, otherwise the legend will be fully opaque. I've set it so that the legend reflects the transparency.
+ 
+x<-ggplot(data=fe, aes(x=Farm, y=FEC))+
+    labs(y="FEC", x="Farm") +
+    geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Rain, colour=Region), width=5, outlier.shape=NA, size=1)+ scale_fill_viridis(direction=-1, option="C", alpha=0.6) + scale_colour_viridis(discrete=TRUE)
+x
+
++
+facet_wrap(~ Age, nrow = 2)+
+theme(axis.title.x = element_text(size=14), axis.text.x = element_text(size=12), axis.title.y = element_text(size=14), axis.text.y = element_text(size=12), strip.text.x = element_text(size = 14))
+x
+
+
+# To plot FEC ~ rain: 
+
+#Plot of Strongyle FEC:
+x<-ggplot(data=fe, aes(x=Rain, y=FEC))+
+labs(y="FEC", x="Rain (mm)") +
+geom_boxplot(mapping=aes(x=Rain, y=FEC, fill=Season, colour=Region), width=5, outlier.shape=NA, size=1, alpha=0.8)
+x
+
+# Generalised linear model
+
+# check the data type: 
+
+r <- c(mean(fe$FEC), var(fe$FEC))
+
+c(mean=r[1], var=r[2], ratio=r[2]/r[1])
+
+       mean         var       ratio 
+   397.4444 111868.6616    281.4699
+
+# OVERDISPERSED. 
+# Therefore, want a negative binomial model I think
+
+library(MASS)
+
+nb1<- glm.nb(FEC~Season, data=fe)
+summary(nb1)
+plot(nb1)
+
+nb2<- glm.nb(FEC~Region, data=fe)
+summary(nb2)
+plot(nb2)
+
+
+nb3<- glm.nb(FEC~Region+Season, data=fe)
+summary(nb3)
+plot(nb3)
+
+nb4<- glm.nb(FEC~Season+Region, data=fe)
+summary(nb4)
+plot(nb4)
+
+model1<-glm(FEC ~ Season, data=fe, family=poisson())
+summary(model1)
+plot(model1)
+
+model2<-glm(FEC ~ Region, data =fe, family=poisson())
+summary(model2)
+plot(model2)
+
+model3<-glm(FEC ~ Region + Season, data =fe, family=poisson())
+summary(model3)
+plot(model3)
+
+
+### Testing residuals correctly - using DHARMa for GL(M)M
+#https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html
+# Based on Dunn, K. P., and Smyth, G. K. (1996). Randomized quantile residuals. Journal of Computational and Graphical Statistics 5, 1-10.
+
+# First, run your model in R. 
+
+install.packages("DHARMa")
+library(DHARMa)
+citation("DHARMa")
+
+#simulationOutput <- simulateResiduals(fittedModel = fittedModel, n = 250)
+#The number of simulations is default at 250, a compromise between time take and precision. If you want to be very precise then raise n to 1000 or more.
+
+simulationOutput <- simulateResiduals(fittedModel = nb1, n = 250)
+
+# The calculated residuals are stored in:
+simulationOutput$scaledResiduals
+
+# If it's a good model....
+# As discussed above, for a correctly specified model we would expect
+# 1. a uniform (flat) distribution of the overall residuals
+# 2. uniformity in y direction if we plot against any predictor.
+
+# Look at the output - is it good?
+
+plot(simulationOutput)
+
+# Well, it's not perfect but it's not bad. 
+# Lets check the poisson one...
+simulationOutput <- simulateResiduals(fittedModel = model1, n = 250)
+plot(simulationOutput)
+# Lol, it's horrific! Definitely the model doesn't fit. But the nb1 does seem to. Whoop!
+
+# Also recommended is to plot the simulationOutput residuals against your own input predictor.
+# plotResiduals(YOURPREDICTOR, simulationOutput$scaledResiduals)
+
+#For nb1... looks ok.
+plotResiduals(fe$Season, simulationOutput$scaledResiduals)
+
+simulationOutput <- simulateResiduals(fittedModel = model1, n = 250)
+plot(simulationOutput)
+plotResiduals(fe$Season, simulationOutput$scaledResiduals)
+#Terrible!
+
+# Can do further testing...
+
+testResiduals(simulationOutput)
+# This is quite nice. Need to expand the plot area to fully visualise. 
+# Can also do:
+testZeroInflation(simulationOutput)
+# nb1 looks good.
+# not really sure about the model1. But the p-value (1) is the same for both models.
+# Either way, I don't think the data is zero-inflated...??
+
+
+# for nb2
+simulationOutput <- simulateResiduals(fittedModel = nb2, n = 250)
+plot(simulationOutput)
+plotResiduals(fe$Season, simulationOutput$scaledResiduals)
+
+# for nb3
+simulationOutput <- simulateResiduals(fittedModel = nb3, n = 250)
+plot(simulationOutput)
+plotResiduals(fe$Season, simulationOutput$scaledResiduals)
+
+# for nb4
+simulationOutput <- simulateResiduals(fittedModel = nb4, n = 250)
+plot(simulationOutput)
+plotResiduals(fe$Season, simulationOutput$scaledResiduals)
+
+## Interestingly, there is no difference in the plot(simulationOutput) for nb3 and nb4. 
