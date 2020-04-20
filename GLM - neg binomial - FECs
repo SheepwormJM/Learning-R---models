@@ -162,3 +162,30 @@ plot(simulationOutput)
 plotResiduals(fe$Season, simulationOutput$scaledResiduals)
 
 ## Interestingly, there is no difference in the plot(simulationOutput) for nb3 and nb4. 
+
+# Note, can get the 95% confidence intervals for the model estimates.
+# Can then exponentiate them to get the FECs themselves.
+
+est <- cbind(Estimate = coef(nb1), confint(nb1))
+Waiting for profiling to be done...
+> est
+               Estimate      2.5 %     97.5 %
+(Intercept)   5.7532074  5.3621579  6.2019546
+SeasonSpring  0.2962312 -0.2502993  0.8210505
+SeasonSummer  0.8637945  0.2691782  1.4584118
+SeasonWinter -1.7892246 -2.4032631 -1.1689185
+> exp(est)
+                Estimate        2.5 %      97.5 %
+(Intercept)  315.2000000 213.18448086 493.7130857
+SeasonSpring   1.3447811   0.77856771   2.2728863
+SeasonSummer   2.3721447   1.30888842   4.2991263
+SeasonWinter   0.1670897   0.09042242   0.3107028
+
+# So, for example, for this model, nb1, the intercept is 315 epg. However, if it is Spring, then you could expect 
+# the intercept to be 1.3x larger than for Autumn (the baseline) (or, 134% of autumn).
+# For summer, the intercept is larger still by 2.3x of Autumn.
+# While, for winter, the intercept is expected to be less - just 0.17x of the autumm FEC. 
+# Looking at a graph of the boxplots, this seems sensible!
+
+
+
