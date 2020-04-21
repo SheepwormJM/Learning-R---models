@@ -1,0 +1,19 @@
+# Using a GLMM to model FECs
+
+library(lme4)
+
+fe<-read.table("Fake_eggs.txt", header=T)
+summary(fe)
+
+names(fe)
+[1] "Region" "FEC"    "Season" "Farm"   "Rain" 
+
+# The FEC is the outcome variable (goes on the left of the model equation)
+# The Season, Region and Rain are variables, as is the Farm
+# However, the Farm (and possibly also the region?) have random effects - could be included in a Mixed effects model.
+
+# To fit a GLMM for negative binomial data using lme4:
+
+require("MASS")
+glmmnb1 <- glmer.nb(FEC ~ Season  + (1|Farm), data=fe)
+glmmnb1
