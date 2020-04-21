@@ -12,8 +12,26 @@ names(fe)
 # The Season, Region and Rain are variables, as is the Farm
 # However, the Farm (and possibly also the region?) have random effects - could be included in a Mixed effects model.
 
+# To fit a GLM using MASS:
+
+> library(MASS)
+> 
+> nb1<- glm.nb(FEC~Season, data=fe)
+> summary(nb1)
+
 # To fit a GLMM for negative binomial data using lme4:
 
 require("MASS")
 glmmnb1 <- glmer.nb(FEC ~ Season  + (1|Farm), data=fe)
 glmmnb1
+
+# There doesn't seem to be much difference between this and the glm.nb model run with MASS! If anything, it might be worse! 
+
+# Checked fit using DHARMa and very little difference. 
+
+> library(DHARMa)
+> simulationOutput <- simulateResiduals(fittedModel = glmmnb1, n = 250)
+> plot(simulationOutput)
+> simulationOutput <- simulateResiduals(fittedModel = nb1, n = 250)
+> plot(simulationOutput)
+
