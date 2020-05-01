@@ -3,12 +3,13 @@
 fe<-read.table("Fake_eggs.txt", header=T)
 summary(fe)
 
-
+library(ggplot2)
 #Plot of Strongyle FEC:
 x<-ggplot(data=fe, aes(x=Farm, y=FEC))+
 labs(y="FEC", x="Farm") +
-geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Season, colour=Region), width=5, outlier.shape=NA, size=1, alpha=0.8)+
+geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Season, colour=Region), outlier.shape=NA, size=1, alpha=0.8)+
 geom_dotplot(binaxis='y', stackdir='center', binwidth=20, dotsize=0.5)
+x
 
 # OR
 x<-ggplot(data=fe, aes(x=Farm, y=FEC))+
