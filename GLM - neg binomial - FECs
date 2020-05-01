@@ -1,6 +1,6 @@
 #Plot of Strongyle FEC:
 
-fe<-read.table("Fake_eggs.txt", header=T)
+fe<-read.table("fake_eggs.txt", header=T)
 summary(fe)
 
 library(ggplot2)
@@ -14,7 +14,7 @@ x
 # OR
 x<-ggplot(data=fe, aes(x=Farm, y=FEC))+
 labs(y="FEC", x="Farm") +
-geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Season, colour=Region), width=5, outlier.shape=NA, size=1, alpha=0.8)+
+geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Season, colour=Region), outlier.shape=NA, size=1, alpha=0.8)+
 geom_jitter(mapping=aes(x=Farm, y=FEC), width=0.3)
 x
 
@@ -29,7 +29,7 @@ library(viridis)
  
 x<-ggplot(data=fe, aes(x=Farm, y=FEC))+
     labs(y="FEC", x="Farm") +
-    geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Rain, colour=Region), width=5, outlier.shape=NA, size=1)+ scale_fill_viridis(direction=-1, option="C", alpha=0.6) + scale_colour_viridis(discrete=TRUE)
+    geom_boxplot(mapping=aes(x=Farm, y=FEC, fill=Rain, colour=Region), outlier.shape=NA, size=1)+ scale_fill_viridis(direction=-1, option="C", alpha=0.6) + scale_colour_viridis(discrete=TRUE)
 x
 
 +
@@ -43,7 +43,7 @@ x
 #Plot of Strongyle FEC:
 x<-ggplot(data=fe, aes(x=Rain, y=FEC))+
 labs(y="FEC", x="Rain (mm)") +
-geom_boxplot(mapping=aes(x=Rain, y=FEC, fill=Season, colour=Region), width=5, outlier.shape=NA, size=1, alpha=0.8)
+geom_boxplot(mapping=aes(x=Rain, y=FEC, fill=Season, colour=Region), outlier.shape=NA, size=1, alpha=0.8)
 x
 
 # Generalised linear model
@@ -75,7 +75,7 @@ nb3<- glm.nb(FEC~Region+Season, data=fe)
 summary(nb3)
 plot(nb3)
 
-nb4<- glm.nb(FEC~Season+Region, data=fe)
+nb4<- glm.nb(FEC~Season+Region+Rain, data=fe)
 summary(nb4)
 plot(nb4)
 
