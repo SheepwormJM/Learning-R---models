@@ -28,6 +28,9 @@ glmmnb1
 glmmnb2 <- glmer.nb(FEC ~ Rain  + (1|Farm), data=fe)
 glmmnb2
 
+glmmnb2b <- glmer.nb(FEC ~ Raing  + (1|Farm), data=fe)
+glmmnb2b
+
 glmmnb3 <- glmer.nb(FEC ~ Rain +Season + (1|Farm), data=fe)
 glmmnb3
 
@@ -36,6 +39,9 @@ glmmnb4
 
 glmmnb5 <- glmer.nb(FEC ~ Rain + (1|Region), data=fe)
 glmmnb5 
+
+glmmnb5b <- glmer.nb(FEC ~ Raing + (1|Region), data=fe)
+glmmnb5b 
 
 glmmnb6 <- glmer.nb(FEC ~ Rain +Season + (1|Region), data=fe)
 glmmnb6 
@@ -64,7 +70,69 @@ plot(simulationOutput7)
 simulationOutput8 <- simulateResiduals(fittedModel = glmmnb8, n = 250)
 plot(simulationOutput8)
 
+# to try to compare glm.nb with glmer.nb:
+# To plot FEC ~ Raing:
 
+library(ggplot2)
+library(viridis)
+library(DHARMa)
+library(MASS)
+library(lme4)
+
+x<-ggplot(data=fe, aes(x=Raing, y=FEC))+
+    labs(y="FEC", x="Rain group") +
+    geom_boxplot(mapping=aes(x=Raing, y=FEC, fill=Season, colour=Region), outlier.shape=NA, size=1)+ scale_fill_viridis(discrete=TRUE) + scale_colour_viridis(discrete=TRUE)
+x
+
+## Hmmm, so the Raing is not being seen in the correct order - <20, >40, 20-30, 30-40. 
+# To re-order can do:
+fe_ordered<-ordered(fe$Raing, levels = c("<20", "20-30", "30-40", ">40"))
+fe$Raingord<-fe_ordered
+class(fe$Raingord)
+# "ordered" "factor"
+
+# Try re-plotting:
+x<-ggplot(data=fe, aes(x=Raingord, y=FEC))+
+    labs(y="FEC", x="Rain group") +
+    geom_boxplot(mapping=aes(x=Raingord, y=FEC, fill=Season, colour=Region), outlier.shape=NA, size=1)+ scale_fill_viridis(discrete=TRUE) + scale_colour_viridis(discrete=TRUE)
+x
+# Good.
+
+# Try a glm.nb for FEC ~ Rain group
+nb1<- glm.nb(FEC~Raingord, data=fe)
+nb1
+simulationOutput <- simulateResiduals(fittedModel = nb1, n = 250)
+plot(simulationOutput)
+
+# Now it calls the raingord by .L, .Q and .C. Not quite sure what these are... 
+
+# To try with unordered:
+nb2<- glm.nb(FEC~Raing, data=fe)
+nb2
+simulationOutput <- simulateResiduals(fittedModel = nb2, n = 250)
+plot(simulationOutput)
+
+# It looks like the output is slightly different but hte model is essentially the same. 
+# DHARMa output the same.
+
+# To try with random effects of farm:
+
+glmmnb1 <- glmer.nb(FEC ~ Raing  + (1|Farm), data=fe)
+glmmnb1
+simulationOutput <- simulateResiduals(fittedModel = glmmnb1, n = 250)
+plot(simulationOutput)
+
+glmmnb2 <- glmer.nb(FEC ~ Raingord  + (1|Farm), data=fe)
+glmmnb2
+simulationOutput <- simulateResiduals(fittedModel = glmmnb2, n = 250)
+plot(simulationOutput)
+
+# Not a huge difference, but the models do run. Can see there is variance by farm in the model fit.
+
+glmmnbx <- glmer.nb(FEC ~ Raingord  + Season + (1|Farm) + (1|Region), data=fe)
+glmmnbx
+simulationOutput <- simulateResiduals(fittedModel = glmmnbx, n = 250)
+plot(simulationOutput)
 
 # There doesn't seem to be much difference between this and the glm.nb model run with MASS! If anything, it might be worse! 
 
