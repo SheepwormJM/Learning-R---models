@@ -2,7 +2,7 @@
 
 library(lme4)
 
-fe<-read.table("Fake_eggs.txt", header=T)
+fe<-read.table("fake_eggs.txt", header=T)
 summary(fe)
 
 names(fe)
