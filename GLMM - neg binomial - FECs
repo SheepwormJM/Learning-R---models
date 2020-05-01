@@ -25,6 +25,47 @@ require("MASS")
 glmmnb1 <- glmer.nb(FEC ~ Season  + (1|Farm), data=fe)
 glmmnb1
 
+glmmnb2 <- glmer.nb(FEC ~ Rain  + (1|Farm), data=fe)
+glmmnb2
+
+glmmnb3 <- glmer.nb(FEC ~ Rain +Season + (1|Farm), data=fe)
+glmmnb3
+
+glmmnb4 <- glmer.nb(FEC ~ Season + (1|Region), data=fe)
+glmmnb4 
+
+glmmnb5 <- glmer.nb(FEC ~ Rain + (1|Region), data=fe)
+glmmnb5 
+
+glmmnb6 <- glmer.nb(FEC ~ Rain +Season + (1|Region), data=fe)
+glmmnb6 
+
+glmmnb7 <- glmer.nb(FEC ~ Rain +Season + (1|Region) + (1|Farm), data=fe)
+glmmnb7
+
+glmmnb8 <- glmer.nb(FEC ~ Rain +Season + Region +(1|Region) + (1|Farm), data=fe)
+glmmnb8
+
+library(DHARMa)
+simulationOutput1 <- simulateResiduals(fittedModel = glmmnb1, n = 250)
+plot(simulationOutput1)
+simulationOutput2 <- simulateResiduals(fittedModel = glmmnb2, n = 250)
+plot(simulationOutput2)
+simulationOutput3 <- simulateResiduals(fittedModel = glmmnb3, n = 250)
+plot(simulationOutput3)
+simulationOutput4 <- simulateResiduals(fittedModel = glmmnb4, n = 250)
+plot(simulationOutput4)
+simulationOutput5 <- simulateResiduals(fittedModel = glmmnb5, n = 250)
+plot(simulationOutput5)
+simulationOutput6 <- simulateResiduals(fittedModel = glmmnb6, n = 250)
+plot(simulationOutput6)
+simulationOutput7 <- simulateResiduals(fittedModel = glmmnb7, n = 250)
+plot(simulationOutput7)
+simulationOutput8 <- simulateResiduals(fittedModel = glmmnb8, n = 250)
+plot(simulationOutput8)
+
+
+
 # There doesn't seem to be much difference between this and the glm.nb model run with MASS! If anything, it might be worse! 
 
 # Checked fit using DHARMa and very little difference. 
