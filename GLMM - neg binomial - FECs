@@ -36,6 +36,21 @@ x<-ggplot(data=fe, aes(x=Season, y=FEC))+
     geom_boxplot(mapping=aes(x=Season, y=FEC, fill=Raing, colour=Farm), outlier.shape=NA, size=1)+ scale_fill_viridis(discrete=TRUE) + scale_colour_viridis(discrete=TRUE)
 x
 
+x<-ggplot(data=fe, aes(x=Season, y=FEC))+
+    labs(y="FEC", x="Season") +
+    geom_boxplot(mapping=aes(x=Season, y=FEC, colour=Region), outlier.shape=NA, size=1)+ scale_colour_viridis(discrete=TRUE)
+x
+
+x<-ggplot(data=fe, aes(x=Raing, y=FEC))+
+    labs(y="FEC", x="Rain Group") +
+    geom_boxplot(mapping=aes(x=Raing, y=FEC, colour=Region), outlier.shape=NA, size=1)+ scale_colour_viridis(discrete=TRUE)
+x
+
+x<-ggplot(data=fe, aes(x=Rain, y=FEC))+
+    labs(y="FEC", x="Rain (mm)") +
+    geom_boxplot(mapping=aes(x=Rain, y=FEC, colour=Region), outlier.shape=NA, size=1)+ scale_colour_viridis(discrete=TRUE)
+x
+
 # To fit a GLM using MASS:
 
 > library(MASS)
@@ -49,8 +64,51 @@ require("MASS")
 glmmnb1 <- glmer.nb(FEC ~ Season  + (1|Farm), data=fe)
 glmmnb1
 
+######################### glmmnb1 ################################
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Negative Binomial(1.4308)  ( log )
+Formula: FEC ~ Season + (1 | Farm)
+   Data: fe
+      AIC       BIC    logLik  deviance  df.resid 
+1516.2696 1531.9006 -752.1348 1504.2696        94 
+Random effects:
+ Groups Name        Std.Dev.
+ Farm   (Intercept) 0.7162  
+Number of obs: 100, groups:  Farm, 11
+Fixed Effects:
+ (Intercept)  SeasonSpring  SeasonSummer  SeasonWinter  
+      6.3645        0.5892        1.2578       -2.1959  
+
+###################################################################
+
+
+
+
+
+
 glmmnb2 <- glmer.nb(FEC ~ Rain  + (1|Farm), data=fe)
 glmmnb2
+
+####################### glmnb2 ##################################
+
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Negative Binomial(1.4315)  ( log )
+Formula: FEC ~ Rain + (1 | Farm)
+   Data: fe
+      AIC       BIC    logLik  deviance  df.resid 
+1524.4007 1534.8214 -758.2004 1516.4007        96 
+Random effects:
+ Groups Name        Std.Dev.
+ Farm   (Intercept) 1.308   
+Number of obs: 100, groups:  Farm, 11
+Fixed Effects:
+(Intercept)         Rain  
+    5.44332      0.03206 
+    
+###################################################################
+
 
 glmmnb2b <- glmer.nb(FEC ~ Raing  + (1|Farm), data=fe)
 glmmnb2b
@@ -58,14 +116,68 @@ glmmnb2b
 glmmnb3 <- glmer.nb(FEC ~ Rain +Season + (1|Farm), data=fe)
 glmmnb3
 
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Negative Binomial(1.4307)  ( log )
+Formula: FEC ~ Rain + Season + (1 | Farm)
+   Data: fe
+     AIC      BIC   logLik deviance df.resid 
+1518.142 1536.378 -752.071 1504.142       93 
+Random effects:
+ Groups Name        Std.Dev.
+ Farm   (Intercept) 0.7111  
+Number of obs: 100, groups:  Farm, 11
+Fixed Effects:
+ (Intercept)          Rain  SeasonSpring  SeasonSummer  SeasonWinter  
+     6.99685      -0.02109       0.80121       1.02626      -2.38524  
+
+#######################################################################
+
 glmmnb4 <- glmer.nb(FEC ~ Season + (1|Region), data=fe)
-glmmnb4 
+glmmnb4
+
+################ glmmnb4 ##########################################
+Error in factory(refitNB, types = c("message", "warning"))(lastfit, theta = exp(t),  : 
+  Downdated VtV is not positive definite
+
+####################################################################
 
 glmmnb5 <- glmer.nb(FEC ~ Rain + (1|Region), data=fe)
 glmmnb5 
 
+############# glmmnb5 ############################################
+Error in factory(refitNB, types = c("message", "warning"))(lastfit, theta = exp(t),  : 
+  Downdated VtV is not positive definite
+In addition: Warning message:
+In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
+  Model is nearly unidentifiable: very large eigenvalue
+ - Rescale variables?
+ ######################################################################
+
 glmmnb5b <- glmer.nb(FEC ~ Raing + (1|Region), data=fe)
 glmmnb5b 
+
+###########   glmmnb5b ###################################################
+boundary (singular) fit: see ?isSingular
+
+> glmmnb5b 
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: Negative Binomial(0.6145)  ( log )
+Formula: FEC ~ Raing + (1 | Region)
+   Data: fe
+      AIC       BIC    logLik  deviance  df.resid 
+1604.0087 1619.6397 -796.0043 1592.0087        94 
+Random effects:
+ Groups Name        Std.Dev.
+ Region (Intercept) 0       
+Number of obs: 100, groups:  Region, 3
+Fixed Effects:
+(Intercept)     Raing>40   Raing20-30   Raing30-40  
+    7.41920      0.05557     -0.33084     -0.68603  
+convergence code 0; 0 optimizer warnings; 1 lme4 warnings 
+> isSingular(glmmnb5b)
+[1] TRUE
 
 glmmnb6 <- glmer.nb(FEC ~ Rain +Season + (1|Region), data=fe)
 glmmnb6 
