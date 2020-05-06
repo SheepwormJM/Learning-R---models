@@ -1,0 +1,9 @@
+# dagitty is an R package which allows you to produce Directed Acyclic Graphs (DAG), which show all your variables.
+# It then allows you to try to understand whether certain variables are confounding your analysis of the effect of the exposure 
+# variable on the measured outcome variable. 
+# Nick Johnsson gave a great talk about this in the stats journal club 6th May 2020, using SEFARI data aiming to understand liver fluke
+# exposure on DLWG in cattle.
+# Following identification of confounder variables in the data, you remove these variables.
+# For example, take only data from Charollais, male, spring born cattle, and re-run your model (e.g. a GLM) to determine the exposure
+# effect. 
+# You could run a separate set of the data separately (e.g. Aberdeen Angus, male, Springborn.. etc).
