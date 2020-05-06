@@ -144,3 +144,75 @@ plot(simulationOutput)
 > simulationOutput <- simulateResiduals(fittedModel = nb1, n = 250)
 > plot(simulationOutput)
 
+#####################################################################################################################################
+###################################### Other models ##############################################################################
+
+
+
+
+##############################################################################################################################
+######################################## Zero-inflated? #####################################################################
+
+# If you need to then see here: 
+
+#############################################################################################################################
+###################################### Issues ############################################################################
+
+# isSingular
+
+# Singular models: random effect variances estimated as zero, or correlations estimated as +/- 1
+
+# It is very common for overfitted mixed models to result in singular fits. Technically, singularity means that some of 
+# the θ (variance-covariance Cholesky decomposition) parameters corresponding to diagonal elements of the Cholesky factor 
+# are exactly zero, which is the edge of the feasible space, or equivalently that the variance-covariance matrix has some 
+# zero eigenvalues (i.e. is positive semidefinite rather than positive definite), or (almost equivalently) that some of 
+# the variances are estimated as zero or some of the correlations are estimated as +/-1. This commonly occurs in two scenarios:
+
+# 1. small numbers of random-effect levels (e.g. <5), as illustrated in these simulations and discussed (in a somewhat 
+# different, Bayesian context) by Gelman (2006).
+# 
+# 2. complex random-effects models, e.g. models of the form (f|g) where f is a categorical variable with a relatively 
+# large number of levels, or models with several different random-slopes terms.
+
+# When using lme4, singularity is most obviously detectable in the output of summary.merMod() or VarCorr.merMod() when a 
+# variance is estimated as 0 (or very small, i.e. orders of magnitude smaller than other variance components) or when a
+# correlation is estimated as exactly ±1. However, as pointed out by D. Bates, Kliegl, et al. (2015), singularities in 
+# larger variance-covariance matrices can be hard to detect: checking for small values among the diagonal elements of 
+# the Cholesky factor is a good start.
+
+theta <- getME(model,"theta")
+## diagonal elements are identifiable because they are fitted
+##  with a lower bound of zero ...
+diag.element <- getME(model,"lower")==0
+any(theta[diag.element]<1e-5)
+# As of lme4 version 1.1-19, this functionality is available as isSingular(model). - In MCMCglmm, singular or near-singular 
+# models will provoke an error and a requirement to specify a stronger prior.
+
+# At present there are a variety of strong opinions about how to resolve such problems. Briefly:
+
+# Barr et al. (2013) suggest always starting with the maximal model (i.e. the most random-effects component of the model that is
+# theoretically identifiable given the experimental design) and then dropping terms when singularity or non-convergence occurs (please 
+# see the paper for detailed recommendations …)
+# 
+#  Matuschek et al. (2017) and D. Bates, Kliegl, et al. (2015) strongly disagree, suggesting that models should be simplified a priori 
+# whenever possible; they also provide tools for diagnosing and mitigating singularity.
+# One alternative (suggested by Robert LaBudde) for the small-numbers-of-levels scenario is to “fit the model with the random factor as 
+# a fixed effect, get the level coefficients in the sum to zero form, and then compute the standard deviation of the coefficients.” This 
+# is appropriate for users who are (a) primarily interested in measuring variation (i.e. the random effects are not just nuisance 
+# parameters, and the variability [rather than the estimated values for each level] is of scientific interest), (b) unable or unwilling 
+# to use other approaches (e.g. MCMC with half-Cauchy priors in WinBUGS), (c) unable or unwilling to collect more data. For the simplest 
+# case (balanced, orthogonal, nested designs with normal errors) these estimates of standard deviations should equal the classical 
+# method-of-moments estimates.
+#
+# Bayesian approaches allow the user to specify a informative prior that avoids singularity.
+# The blme package (Chung et al. 2013) provides a wrapper for the lme4 machinery that adds a particular form of weak prior to get an 
+# approximate a Bayesian maximum a posteriori estimate that avoids singularity.
+# The MCMCglmm package allows for priors on the variance-covariance matrix
+# The rstanarm and brms packages provide wrappers for the Stan Hamiltonian MCMC engine that fit GLMMs via lme4 syntax, again allowing a 
+# variety of priors to be set.
+
+# If a variance component is zero, dropping it from the model will have no effect on any of the estimated quantities (although it will 
+# affect the AIC, as the variance parameter is counted even though it has no effect). Pasch, Bolker, and Phelps (2013) gives one example 
+# where random effects were dropped because the variance components were consistently estimated as zero. Conversely, if one chooses for 
+# philosophical grounds to retain these parameters, it won’t change any of the answers.
+
