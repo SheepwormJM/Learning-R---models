@@ -12,6 +12,30 @@ names(fe)
 # The Season, Region and Rain are variables, as is the Farm
 # However, the Farm (and possibly also the region?) have random effects - could be included in a Mixed effects model.
 
+## To plot the data: 
+library(viridis)
+#Note, the viridis colour library has good colour choices for colourblind people. 
+# You can use the functions: direction=1 (default) or -1, to get the DIRECTION of the colour gradient - for example, do you want it to go cold to hot, or hot to cold? 
+# You can ues the function option="A", or option="B", or option="C", or option = "D", or option="E", to get different colour palettes. If you remove option then you get the default viridis colour palette (option D). 
+# Have a play and see what you like.
+# Note that the scale_fill_viridis corresponds to the fill colour, while the scale_colour_viridis corresponds to the 'colour' colour. My fill is based on a continuous numerical variable (viridis' default option), while my colour (Region) is discrete, and so I have to use discrete=TRUE for the scale_colour_viridis. 
+# If you change alpha then you change the transparency. You can do this either in the geom_boxplot or in the scale_fill_viridis. Don't do it in both. If you do it in the viridis command then it will also be reflected in the legend, otherwise the legend will be fully opaque. I've set it so that the legend reflects the transparency.
+ 
+x<-ggplot(data=fe, aes(x=Season, y=FEC))+
+    labs(y="FEC", x="Season") +
+    geom_boxplot(mapping=aes(x=Season, y=FEC, fill=Rain, colour=Region), outlier.shape=NA, size=1)+ scale_fill_viridis(direction=1, option="C", alpha=0.6) + scale_colour_viridis(discrete=TRUE)
+x
+
+x<-ggplot(data=fe, aes(x=Season, y=FEC))+
+    labs(y="FEC", x="Season") +
+    geom_boxplot(mapping=aes(x=Season, y=FEC, fill=Raing, colour=Region), outlier.shape=NA, size=1)+ scale_fill_viridis(discrete=TRUE) + scale_colour_viridis(discrete=TRUE)
+x
+
+x<-ggplot(data=fe, aes(x=Season, y=FEC))+
+    labs(y="FEC", x="Season") +
+    geom_boxplot(mapping=aes(x=Season, y=FEC, fill=Raing, colour=Farm), outlier.shape=NA, size=1)+ scale_fill_viridis(discrete=TRUE) + scale_colour_viridis(discrete=TRUE)
+x
+
 # To fit a GLM using MASS:
 
 > library(MASS)
