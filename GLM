@@ -188,3 +188,5 @@ How to interpret the outcome for logits. Don't understand in the interaction ter
 
 https://www.theanalysisfactor.com/interaction-association/
 
+
+# Useful for interpreting glms (at least binomial, but also generally helpful): https://www.statology.org/interpret-glm-output-in-r/
